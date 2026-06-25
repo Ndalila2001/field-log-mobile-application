@@ -8,9 +8,12 @@ class FieldLogForm extends StatelessWidget {
     required this.countController,
     required this.latitudeController,
     required this.longitudeController,
-    required this.photoController,
     required this.notesController,
+    required this.selectedPhotoNames,
     required this.onCaptureLocation,
+    required this.onPickGalleryPhotos,
+    required this.onCapturePhoto,
+    required this.onRemovePhoto,
     required this.onSave,
     required this.requiredTextValidator,
     required this.positiveIntegerValidator,
@@ -22,9 +25,12 @@ class FieldLogForm extends StatelessWidget {
   final TextEditingController countController;
   final TextEditingController latitudeController;
   final TextEditingController longitudeController;
-  final TextEditingController photoController;
   final TextEditingController notesController;
+  final List<String> selectedPhotoNames;
   final VoidCallback onCaptureLocation;
+  final VoidCallback onPickGalleryPhotos;
+  final VoidCallback onCapturePhoto;
+  final ValueChanged<int> onRemovePhoto;
   final VoidCallback onSave;
   final FormFieldValidator<String> requiredTextValidator;
   final FormFieldValidator<String> positiveIntegerValidator;
@@ -113,14 +119,40 @@ class FieldLogForm extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: photoController,
-                decoration: const InputDecoration(
-                  labelText: 'Photo file names',
-                  hintText: 'tracks.jpg, herd.jpg',
-                  prefixIcon: Icon(Icons.photo_camera),
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: onPickGalleryPhotos,
+                      icon: const Icon(Icons.photo_library),
+                      label: const Text('Select photos'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: onCapturePhoto,
+                      icon: const Icon(Icons.photo_camera),
+                      label: const Text('Use camera'),
+                    ),
+                  ),
+                ],
               ),
+              if (selectedPhotoNames.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    for (final entry in selectedPhotoNames.indexed)
+                      InputChip(
+                        avatar: const Icon(Icons.image, size: 16),
+                        label: Text(entry.$2),
+                        onDeleted: () => onRemovePhoto(entry.$1),
+                      ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 12),
               TextFormField(
                 controller: notesController,

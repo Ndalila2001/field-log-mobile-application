@@ -5,7 +5,7 @@ Flutter mobile prototype for wildlife rangers who record sightings in low-connec
 ## What is included
 
 - Offline-first field log queue in the Flutter app.
-- Sighting form for species, GPS coordinates, animal count, photo file names, and notes.
+- Sighting form for species, GPS coordinates, animal count, real photo selection, and notes.
 - Pending, synced, and retry states for each log.
 - Online/offline toggle to simulate unreliable connectivity.
 - Sync action that posts pending logs to a Node.js API.
@@ -43,4 +43,4 @@ flutter test
 
 ## Notes
 
-The current build keeps logs in memory to demonstrate the assessment workflow without extra dependencies. A production pass would add durable local storage, real GPS capture, image picker integration, authentication, and retry/backoff sync.
+The current build keeps logs in memory to demonstrate the assessment workflow. A production pass would add durable local storage, real GPS capture, actual image upload/storage, authentication, and retry/backoff sync.

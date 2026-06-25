@@ -22,6 +22,10 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Field Log uses the camera to attach wildlife sighting photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Field Log uses your photo library to attach wildlife sighting photos.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

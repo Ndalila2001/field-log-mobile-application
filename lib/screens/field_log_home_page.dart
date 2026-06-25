@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
 import '../field_log_api.dart';
 import '../field_log_entry.dart';
 import '../widgets/field_log_form.dart';
@@ -19,7 +21,8 @@ class _FieldLogHomePageState extends State<FieldLogHomePage> {
   final _latitudeController = TextEditingController(text: '-22.5609');
   final _longitudeController = TextEditingController(text: '17.0658');
   final _notesController = TextEditingController();
-  final _photoController = TextEditingController();
+  final _imagePicker = ImagePicker();
+  final List<XFile> _selectedPhotos = [];
 
   final List<FieldLogEntry> _logs = [
     FieldLogEntry(
@@ -58,7 +61,6 @@ class _FieldLogHomePageState extends State<FieldLogHomePage> {
     _latitudeController.dispose();
     _longitudeController.dispose();
     _notesController.dispose();
-    _photoController.dispose();
     super.dispose();
   }
 
@@ -69,16 +71,58 @@ class _FieldLogHomePageState extends State<FieldLogHomePage> {
     });
   }
 
+  Future<void> _pickGalleryPhotos() async {
+    try {
+      final photos = await _imagePicker.pickMultiImage(imageQuality: 85);
+      if (photos.isEmpty) {
+        return;
+      }
+
+      setState(() {
+        _selectedPhotos.addAll(photos);
+        _syncMessage = '${photos.length} photo(s) attached to the sighting.';
+      });
+    } catch (_) {
+      setState(() {
+        _syncMessage = 'Could not open the photo picker on this device.';
+      });
+    }
+  }
+
+  Future<void> _capturePhoto() async {
+    try {
+      final photo = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+      );
+      if (photo == null) {
+        return;
+      }
+
+      setState(() {
+        _selectedPhotos.add(photo);
+        _syncMessage = 'Camera photo attached to the sighting.';
+      });
+    } catch (_) {
+      setState(() {
+        _syncMessage = 'Could not access the camera on this device.';
+      });
+    }
+  }
+
+  void _removePhoto(XFile photo) {
+    setState(() {
+      _selectedPhotos.remove(photo);
+      _syncMessage = 'Photo removed from the sighting.';
+    });
+  }
+
   Future<void> _addLog() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    final photoNames = _photoController.text
-        .split(',')
-        .map((name) => name.trim())
-        .where((name) => name.isNotEmpty)
-        .toList();
+    final photoNames = _selectedPhotos.map((photo) => photo.name).toList();
 
     final log = FieldLogEntry(
       id: 'log-${DateTime.now().microsecondsSinceEpoch}',
@@ -96,7 +140,7 @@ class _FieldLogHomePageState extends State<FieldLogHomePage> {
       _speciesController.clear();
       _countController.text = '1';
       _notesController.clear();
-      _photoController.clear();
+      _selectedPhotos.clear();
       _syncMessage = _isOnline
           ? 'Log saved locally. Syncing to the API...'
           : 'Log saved offline and queued for end-of-shift sync.';
@@ -242,9 +286,12 @@ class _FieldLogHomePageState extends State<FieldLogHomePage> {
       countController: _countController,
       latitudeController: _latitudeController,
       longitudeController: _longitudeController,
-      photoController: _photoController,
       notesController: _notesController,
+      selectedPhotoNames: _selectedPhotos.map((photo) => photo.name).toList(),
       onCaptureLocation: _captureCurrentLocation,
+      onPickGalleryPhotos: _pickGalleryPhotos,
+      onCapturePhoto: _capturePhoto,
+      onRemovePhoto: (index) => _removePhoto(_selectedPhotos[index]),
       onSave: _addLog,
       requiredTextValidator: _requiredText,
       positiveIntegerValidator: _positiveInteger,
